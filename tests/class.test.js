@@ -1,3 +1,5 @@
+'use strict';
+
 const {
   Character,
   Bowman,
@@ -83,7 +85,139 @@ describe('Character Classes', () => {
       expect(daemon.defence).toBe(40);
     });
   });
-  
+
+  describe('Level Up Method', () => {
+    test('should increase level and stats by 20%', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.levelUp();
+
+      expect(bowman.level).toBe(2);
+      expect(bowman.attack).toBe(30);
+      expect(bowman.defence).toBe(30);
+      expect(bowman.health).toBe(100);
+    });
+
+    test('should throw error when leveling up dead character', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.health = 0;
+
+      expect(() => bowman.levelUp()).toThrow('Нельзя повысить левел умершего');
+    });
+
+    test('should throw error when leveling up character with negative health', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.health = -10;
+
+      expect(() => bowman.levelUp()).toThrow('Нельзя повысить левел умершего');
+    });
+
+    test('should reset health to 100 after level up', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.health = 50;
+      bowman.levelUp();
+
+      expect(bowman.health).toBe(100);
+    });
+
+    test('should work correctly with decimal values', () => {
+      const magician = new Magician('Gandalf');
+      magician.levelUp();
+
+      expect(magician.attack).toBe(12);
+      expect(magician.defence).toBe(48);
+    });
+
+    test('should work correctly for multiple level ups', () => {
+      const swordsman = new Swordsman('Aragorn');
+      swordsman.levelUp();
+      swordsman.levelUp();
+
+      expect(swordsman.level).toBe(3);
+      expect(swordsman.health).toBe(100);
+    });
+  });
+
+  describe('Damage Method', () => {
+    test('should reduce health based on defence', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.damage(40);
+
+      expect(bowman.health).toBe(70);
+    });
+
+    test('should not reduce health below 0', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.damage(200);
+
+      expect(bowman.health).toBe(0);
+    });
+
+    test('should not damage dead character', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.health = 0;
+      bowman.damage(50);
+
+      expect(bowman.health).toBe(0);
+    });
+
+    test('should calculate damage correctly for different defence values', () => {
+      const swordsman = new Swordsman('Aragorn');
+      swordsman.damage(50);
+
+      expect(swordsman.health).toBe(55);
+    });
+
+    test('should calculate damage correctly for high defence', () => {
+      const magician = new Magician('Gandalf');
+      magician.damage(50);
+
+      expect(magician.health).toBe(70);
+    });
+
+    test('should handle zero damage', () => {
+      const bowman = new Bowman('Legolas');
+      const initialHealth = bowman.health;
+      bowman.damage(0);
+
+      expect(bowman.health).toBe(initialHealth);
+    });
+
+    test('should handle negative damage (no effect)', () => {
+      const bowman = new Bowman('Legolas');
+      const initialHealth = bowman.health;
+      bowman.damage(-10);
+
+      expect(bowman.health).toBe(initialHealth);
+    });
+
+    test('should work with decimal damage values', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.damage(33.33);
+
+      expect(bowman.health).toBeCloseTo(75);
+    });
+  });
+
+  describe('Integration: Level Up and Damage', () => {
+    test('level up should work after taking damage', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.damage(40);
+      bowman.levelUp();
+
+      expect(bowman.level).toBe(2);
+      expect(bowman.health).toBe(100);
+      expect(bowman.attack).toBe(30);
+    });
+
+    test('damage calculation should use updated stats after level up', () => {
+      const bowman = new Bowman('Legolas');
+      bowman.levelUp();
+      bowman.damage(40);
+
+      expect(bowman.health).toBe(72);
+    });
+  });
+
   describe('All Character Types Creation', () => {
     test('should create all character types without errors', () => {
       expect(() => new Bowman('Bowman')).not.toThrow();

@@ -1,3 +1,5 @@
+'use strict';
+
 class Character {
   constructor(name, type) {
     this.name = name;
